@@ -1,0 +1,122 @@
+# Introduction
+The customer insights API allow for access to data on what customers are saying about company x online.
+This document is arranged by paths and HTTP actions.
+All data returned will be in JSON format.
+
+## Posts
+
+### Retrieve posts
+
+[GET] /api/posts
+This path retrieves all posts (by default: ordered by ascending id)
+
+|-----------------------|---------------------------------------------------|--------------------------------|
+| URL query parameters  | Description                                       | Example request                |
+|-----------------------|---------------------------------------------------|--------------------------------|
+| city (optional)       | Filter posts by city                              | /api/posts?city=montreal       | 
+|-----------------------|---------------------------------------------------|--------------------------------|
+| country (optional)    | Filter posts by country                           | /api/posts?country=canada      |
+|-----------------------|---------------------------------------------------|--------------------------------|
+| body (optional)       | Filter posts whose body contains a word           | /api/posts?body=awesome        |
+|                       | or list of words                                  |                                |
+|-----------------------|---------------------------------------------------|--------------------------------|
+| limit (optional)      | Limit the number of posts returned                | /api/posts?limit=10            | 
+|-----------------------|---------------------------------------------------|--------------------------------|
+| sort (optional)       | Order results by [field]                          | /api/posts?timp_stamp_desc     |
+|                       | [field] can be one of the following:              | /api/posts?timp_stamp_asc      |
+|                       | id, time_stamp, relevance_score, sentiment_score  |                                |
+|                       | Append _asc or _desc to [field] to indicate order |                                |       
+|-----------------------|---------------------------------------------------|--------------------------------|
+
+#### Combining query parameters
+All query parameters are optional can be used alone or in conjunction with other parameters
+Example request: /api/posts?country=canada&city=montreal&sort=time_stamp_asc&limit=2
+
+#### Example response
+[
+    {
+        "_id": "5b961c3f69c0906b8295cea7",
+        "body": "Suspendisse facilisis massa in enim interdum, vitae dictum neque rhoncus. Cras quis odio sit amet augue sollicitudin sollicitudin sed vel magna. Integer hendrerit in enim ac gravida.",
+        "city": "Montreal",
+        "company": "Volkswagen",
+        "country": "Canada",
+        "id": 953,
+        "relevance_score": 0.05,
+        "sector": "Automotive",
+        "sentiment_score": 3.61,
+        "time_stamp": "2017-11-16T00:51:21.000Z",
+        "__v": 0
+    },
+    {
+        "_id": "5b961c3f69c0906b8295ce1b",
+        "body": "Sed vel vulputate turpis, sit amet iaculis lorem. Aenean hendrerit lacinia mollis. In dignissim lorem ante.",
+        "city": "Montreal",
+        "company": "Samsung",
+        "country": "Canada",
+        "id": 813,
+        "relevance_score": 0.01,
+        "sector": "Technology",
+        "sentiment_score": 0.78,
+        "time_stamp": "2017-12-24T12:42:21.000Z",
+        "__v": 0
+    }
+]
+
+## Metrics
+
+### Retrieve aggregated relevance and sentiment scores
+
+[GET] /api/agg
+This path retrieves aggregated relevance and sentiment scores (by default: arithmetic average)
+
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+| URL query parameters  | Description                                                   | Example request                |
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+| type (optional)       | Return additional statistical aggregations                    | /api/agg?type=median           |
+|                       | Aggregations can be any of the following:                     | /api/agg?type=mode,range       |
+|                       | median, mode, range                                           |                                |
+|                       | Choose multiple using ',' seperator                           |                                |
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+| start (optional)      | Perform aggregation on posts after start date (inclusive)     | /api/agg?start=7/1/2018        |
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+| end (optional)        | Perform aggregation on posts before end date (inclusive)      | /api/agg?end=8/1/2018          |
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+| group_by (optional)   | Perform aggregation on given time granularity                 | /api/agg?group_by=day          |
+|                       | Time granularity can be one of the following:                 |                                |              
+|                       | hour, day, week                                               |                                | 
+|-----------------------|---------------------------------------------------------------|--------------------------------|
+
+
+#### Combining query parameters
+All query parameters are optional can be used alone or in conjunction with other parameters
+Example request: /api/agg?type=mode&start=7/1/2018&end=8/1/2018&group_by=day
+
+#### Example response
+[
+    {
+        "_id": {
+            "year": 2018,
+            "month": 7,
+            "dayOfMonth": 27
+        },
+        "avg relevance score": 0.32,
+        "avg sentiment score": -0.2625,
+        "max_relevance_label": 0.6,
+        "min_relevance_label": 0.09,
+        "max_sentiment_label": 1.72,
+        "min_sentiment_label": -2.35
+    },
+    {
+        "_id": {
+            "year": 2018,
+            "month": 2,
+            "dayOfMonth": 22
+        },
+        "avg relevance score": 0.4375,
+        "avg sentiment score": -0.6725,
+        "max_relevance_label": 0.62,
+        "min_relevance_label": 0.07,
+        "max_sentiment_label": 2.66,
+        "min_sentiment_label": -2.95
+    }
+]
