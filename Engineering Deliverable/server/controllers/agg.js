@@ -1,4 +1,5 @@
 const Post = require('../models/Post.js');
+const sanitize = require('mongo-sanitize');
 
 	const getAgg = (req, res) => {
 		let start_date = new Date(-8640000000000000);
@@ -11,19 +12,17 @@ const Post = require('../models/Post.js');
 		};
 
 	for (let key in req.query) {
-		console.log(key)
 		if(key === 'start') {
-			console.log(req.query.start)
-			start_date = new Date(req.query.start);
+			start_date = new Date(sanitize(req.query.start));
 		}
 
 		else if(key === 'end') {
-			end_date = new Date(req.query.end);
+			end_date = new Date(sanitize(req.query.end));
 		}
 
 // Aggregation based on metric (median, mode, range)
 		else if (key === 'type') {
-			const arr = req.query.type.split(',');
+			const arr = sanitize(req.query.type).split(',');
 
 			for (let val of arr) {
 				if (val === 'median') {
@@ -43,20 +42,20 @@ const Post = require('../models/Post.js');
 
 //Aggregation based on date (hour, week, day)
 		else if (key === 'group_by') {
-			if (req.query.group_by === 'hour') {
+			if (sanitize(req.query.group_by) === 'hour') {
 				group['_id'] = {
 					year: { $year: '$time_stamp' },
 					month: { $month: '$time_stamp' },
 					day: { $dayOfMonth: '$time_stamp' },
 					hour: { $hour: '$time_stamp' },
 				};
-			} else if (req.query.group_by === 'day') {
+			} else if (sanitize(req.query.group_by) === 'day') {
 				group['_id'] = {
 					year: { $year: '$time_stamp' },
 					month: { $month: '$time_stamp' },
 					day: { $dayOfMonth: '$time_stamp' },
 				};
-			} else if (req.query.group_by === 'week') {
+			} else if (sanitize(req.query.group_by) === 'week') {
 				group['_id'] = {
 					year: { $year: '$time_stamp' },
 					week: { $week: '$time_stamp' },
